@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notre Équipe – Musée Rovan'Antananarivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; color: #1a1a1a; }
+        h1,h2,h3,.serif { font-family: 'Playfair Display', serif; }
+        
+        /* --- Styles de l'Organigramme --- */
+        .tree-container {
+            width: 100%;
+            overflow-x: auto;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tree ul {
+            padding-top: 20px; 
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tree li {
+            float: left; text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 10px 0 10px;
+        }
+
+        /* Lignes de connexion */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute; top: 0; right: 50%;
+            border-top: 2px solid #ccc;
+            width: 50%; height: 20px;
+        }
+        .tree li::after {
+            right: auto; left: 50%;
+            border-left: 2px solid #ccc;
+        }
+
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 2px solid #ccc; border-radius: 0 5px 0 0; }
+        .tree li:first-child::after { border-radius: 5px 0 0 0; }
+
+        .tree ul ul::before {
+            content: '';
+            position: absolute; top: 0; left: 50%;
+            border-left: 2px solid #ccc;
+            width: 0; height: 20px;
+        }
+
+        /* --- Style des Cartes (Style Image) --- */
+        .member-card {
+            background: white;
+            border: 1px solid #ddd;
+            display: inline-block;
+            min-width: 220px;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer; /* Indique que c'est cliquable */
+        }
+        
+        .member-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            border-color: #92400e; 
+        }
+
+        .member-content {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+        }
+
+        .member-photo {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border: 1px solid #eee;
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+
+        .member-info { text-align: left; }
+
+        .member-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .role-bar {
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bg-ceo-cto { background-color: #006699; } 
+        .bg-consultant { background-color: #28a745; } 
+        .bg-default { background-color: #dc3545; }
+
+        /* Modale */
+        #memberModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="fixed w-full z-50 top-0 bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="{% url 'home' %}" class="text-xl font-bold tracking-tighter serif uppercase">
+            <div class="text-xl md:text-2xl font-bold tracking-tighter serif uppercase">
+                <img style="max-width: 100%; height: 70px; border-radius: 20px;" src="{% static 'museum/image/logo.jpg' %}" alt="Logo">
+            </div>
+        </a>
+        <div class="hidden lg:flex space-x-8 uppercase text-[10px] tracking-widest font-semibold">
+            <a href="{% url 'home' %}" class="hover:text-amber-700">Accueil</a>
+            <a href="{% url 'events' %}" class="hover:text-amber-700">Événements</a>
+            <a href="{% url 'staff' %}" class="text-amber-700">Équipe</a>
+            <a href="{% url 'contact' %}" class="hover:text-amber-700">Contact</a>
+        </div>
+        <a href="{% url 'home' %}#tickets" class="hidden sm:block border border-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-black hover:text-white transition-all">Billetterie</a>
+    </div>
+</nav>
+
+<div class="bg-stone-900 text-white pt-32 pb-16 px-6 text-center">
+    <p class="uppercase tracking-[0.3em] text-xs mb-3 opacity-70">Musée Rova</p>
+    <h1 class="text-4xl md:text-6xl serif mb-4">Notre Équipe</h1>
+    <p class="text-gray-300 max-w-xl mx-auto text-sm">Cliquez sur un membre pour voir son profil détaillé.</p>
+</div>
+
+<div class="tree-container">
+    <div class="tree">
+        {% if members %}
+        <ul>
+            <li>
+                <div class="member-card">
+                    <div class="member-content">
+                        <img src="{% static 'museum/image/logo.jpg' %}" class="member-photo" alt="Musée">
+                        <div class="member-info">
+                            <p class="member-name">Musée Rovan'</p>
+                        </div>
+                    </div>
+                    <div class="role-bar bg-default">Direction Générale</div>
+                </div>
+
+                <ul>
+                    {% for member in members %}
+                    <li>
+                        <div class="member-card" onclick="openModal(
+                            '{{ member.full_name|escapejs }}', 
+                            '{{ member.get_role_display|escapejs }}', 
+                            '{% if member.photo %}{{ member.photo.url }}{% endif %}', 
+                            '{{ member.bio|escapejs }}', 
+                            '{{ member.phone|escapejs }}', 
+                            '{{ member.email|escapejs }}',
+                            '{{ member.joined_at|date:"Y" }}'
+                        )">
+                            <div class="member-content">
+                                {% if member.photo %}
+                                <img src="{{ member.photo.url }}" class="member-photo" alt="{{ member.full_name }}">
+                                {% else %}
+                                <div class="member-photo bg-stone-800 flex items-center justify-center text-white text-xs font-bold">
+                                    {{ member.first_name|first }}{{ member.last_name|first }}
+                                </div>
+                                {% endif %}
+                                <div class="member-info">
+                                    <p class="member-name">{{ member.full_name }}</p>
+                                </div>
+                            </div>
+                            <div class="role-bar {% if 'Consultant' in member.get_role_display %}bg-consultant{% else %}bg-ceo-cto{% endif %}">
+                                {{ member.get_role_display }}
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+<div id="memberModal" onclick="closeModal()">
+    <div class="bg-white max-w-md w-full rounded-lg overflow-hidden shadow-2xl relative" onclick="event.stopPropagation()">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black text-xl">&times;</button>
+        
+        <div class="h-48 bg-stone-100 flex items-center justify-center overflow-hidden">
+            <img id="modalImg" src="" class="w-full h-full object-cover hidden">
+            <div id="modalInitials" class="w-20 h-20 rounded-full bg-stone-800 flex items-center justify-center text-white text-3xl serif"></div>
+        </div>
+
+        <div class="p-8">
+            <span id="modalRole" class="inline-block bg-amber-100 text-amber-800 text-[10px] uppercase tracking-widest font-bold px-2 py-1 mb-2"></span>
+            <h3 id="modalName" class="serif text-2xl font-bold mb-4"></h3>
+            
+            <p id="modalBio" class="text-sm text-gray-600 leading-relaxed mb-6"></p>
+
+            <div class="border-t border-gray-100 pt-6 space-y-3">
+                <p class="flex items-center gap-3 text-sm text-gray-700">
+                    <span>📞</span> <span id="modalPhone"></span>
+                </p>
+                <p class="flex items-center gap-3 text-sm text-gray-700">
+                    <span>✉️</span> <span id="modalEmail" class="truncate"></span>
+                </p>
+                <p class="flex items-center gap-3 text-xs text-gray-400">
+                    <span>📅</span> <span>Membre depuis <span id="modalDate"></span></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-stone-900 text-white py-12 px-6">
+    <div class="max-w-7xl auto text-center">
+        <p class="serif text-2xl mb-2">MUSÉE ROVAN'ANTANANARIVO</p>
+        <p class="text-gray-400 text-xs uppercase tracking-widest">Patrimoine de Madagascar</p>
+    </div>
+</footer>
+
+<script>
+    function openModal(name, role, photo, bio, phone, email, date) {
+        document.getElementById('modalName').innerText = name;
+        document.getElementById('modalRole').innerText = role;
+        document.getElementById('modalBio').innerText = bio || "Aucune biographie disponible.";
+        document.getElementById('modalPhone').innerText = phone || "N/A";
+        document.getElementById('modalEmail').innerText = email || "N/A";
+        document.getElementById('modalDate').innerText = date || "N/A";
+
+        const img = document.getElementById('modalImg');
+        const initials = document.getElementById('modalInitials');
+
+        if (photo) {
+            img.src = photo;
+            img.classList.remove('hidden');
+            initials.classList.add('hidden');
+        } else {
+            img.classList.add('hidden');
+            initials.classList.remove('hidden');
+            initials.innerText = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
+        }
+
+        document.getElementById('memberModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Empêche le scroll derrière
+    }
+
+    function closeModal() {
+        document.getElementById('memberModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+</script>
+
+</body>
+</html>

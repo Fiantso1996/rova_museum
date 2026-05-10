@@ -1,0 +1,385 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Scan Ticket - Musée Rovan'i Antananarivo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --bg: #090a18;
+  --card: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.1);
+  --accent: #c5a059;  /* Or du musée */
+  --text: #f0f0ff;
+  --muted: rgba(240,240,255,0.5);
+  --success: #6af7a2;
+  --danger: #f76a6a;
+  --warn: #f7a26a;
+  --radius: 16px;
+  --font-d: 'Syne', sans-serif;
+  --font-b: 'DM Sans', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:15px;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden;}
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.3;animation:float 12s ease-in-out infinite;}
+.orb1{width:400px;height:400px;background:var(--accent);top:-100px;left:-80px;}
+.orb2{width:300px;height:300px;background:#f7a26a;bottom:-80px;right:-60px;animation-delay:-5s;}
+@keyframes float{0%,100%{transform:translate(0,0);}50%{transform:translate(20px,-15px);}}
+.wrapper{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
+header{background:rgba(9,10,24,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:38px;height:38px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 20px rgba(197,160,89,.5);}
+.logo-text{font-family:var(--font-d);font-weight:800;font-size:1.1rem;}
+.header-badge{background:rgba(106,247,162,.12);color:var(--success);border:1px solid rgba(106,247,162,.25);padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;display:flex;align-items:center;gap:6px;}
+.header-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+main{flex:1;padding:24px;max-width:600px;margin:0 auto;width:100%;}
+.section-title{font-family:var(--font-d);font-size:1.4rem;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.section-sub{font-size:.82rem;color:var(--muted);margin-bottom:20px;}
+.camera-container{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:4/3;margin-bottom:16px;}
+#video{width:100%;height:100%;object-fit:cover;display:block;}
+.camera-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.scan-frame{width:220px;height:120px;position:relative;}
+.scan-frame::before,.scan-frame::after{content:'';position:absolute;width:30px;height:30px;border-color:var(--accent);border-style:solid;}
+.scan-frame::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0;}
+.scan-frame::after{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0;}
+.scan-frame-b{width:100%;height:100%;position:relative;}
+.scan-frame-b::before,.scan-frame-b::after{content:'';position:absolute;width:30px;height:30px;border-color:var(--accent);border-style:solid;}
+.scan-frame-b::before{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px;}
+.scan-frame-b::after{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0;}
+.scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scanAnim 2s linear infinite;}
+@keyframes scanAnim{0%{top:0;}100%{top:calc(100% - 2px);}}
+.camera-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--muted);}
+.camera-placeholder i{font-size:3rem;color:var(--accent);opacity:.6;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:10px;font-size:.9rem;font-weight:500;font-family:var(--font-b);cursor:pointer;border:none;text-decoration:none;transition:all .2s;}
+.btn-primary{background:var(--accent);color:#090a18;box-shadow:0 4px 15px rgba(197,160,89,.35);}
+.btn-primary:hover{background:#d4b16a;transform:translateY(-1px);}
+.btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--text);}
+.btn-secondary:hover{background:rgba(255,255,255,.08);}
+.btn-danger{background:rgba(247,106,106,.2);color:var(--danger);border:1px solid rgba(247,106,106,.3);}
+.btn-lg{padding:14px 28px;font-size:1rem;width:100%;justify-content:center;}
+.btn-row{display:flex;gap:10px;margin-bottom:16px;}
+.manual-section{margin-bottom:16px;}
+.form-label{display:block;font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+.input-row{display:flex;gap:8px;}
+.form-control{flex:1;padding:12px 16px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-b);font-size:.95rem;outline:none;transition:border-color .2s;}
+.form-control:focus{border-color:var(--accent);background:rgba(197,160,89,.06);}
+.result-card{border-radius:var(--radius);padding:20px;margin-bottom:16px;animation:slideUp .3s ease;position:relative;overflow:hidden;display:none;}
+.result-card.show{display:block;}
+.result-card.valide{background:rgba(106,247,162,.08);border:2px solid rgba(106,247,162,.3);}
+.result-card.expire{background:rgba(247,162,106,.08);border:2px solid rgba(247,162,106,.3);}
+.result-card.deja_utilise{background:rgba(247,106,106,.08);border:2px solid rgba(247,106,106,.3);}
+.result-card.invalide{background:rgba(247,106,106,.08);border:2px solid rgba(247,106,106,.3);}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.result-icon{font-size:2.5rem;margin-bottom:10px;}
+.result-status{font-family:var(--font-d);font-size:1.5rem;font-weight:800;margin-bottom:4px;}
+.result-detail{font-size:.85rem;color:var(--muted);margin-bottom:14px;}
+.result-info{background:rgba(0,0,0,.2);border-radius:10px;padding:12px 16px;font-size:.82rem;}
+.result-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.result-row:last-child{border-bottom:none;}
+.result-row span:first-child{color:var(--muted);}
+.result-row span:last-child{font-weight:500;color:var(--text);}
+.scan-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.stat-mini{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.stat-mini-val{font-family:var(--font-d);font-size:1.4rem;font-weight:800;}
+.stat-mini-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.config-panel{background:rgba(9,10,24,.95);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:none;}
+.config-panel.open{display:block;}
+footer{background:rgba(9,10,24,.7);border-top:1px solid var(--border);padding:12px 24px;text-align:center;font-size:.75rem;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="orbs"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="wrapper">
+
+<header>
+  <div class="logo">
+    <div class="logo-icon"><i class="fas fa-qrcode"></i></div>
+    <div class="logo-text">Musée Rova Scanner</div>
+  </div>
+  <div class="header-badge"><span class="dot"></span> En ligne</div>
+</header>
+
+<main>
+  <div class="section-title">Validation des billets</div>
+  <p class="section-sub">Scannez le code-barres EAN-13 ou saisissez-le manuellement</p>
+
+  <div class="scan-stats">
+    <div class="stat-mini"><div class="stat-mini-val" id="count-total">0</div><div class="stat-mini-label">Total</div></div>
+    <div class="stat-mini"><div class="stat-mini-val" style="color:var(--success);" id="count-ok">0</div><div class="stat-mini-label">Valides</div></div>
+    <div class="stat-mini"><div class="stat-mini-val" style="color:var(--danger);" id="count-nok">0</div><div class="stat-mini-label">Refusés</div></div>
+  </div>
+
+  <div class="result-card" id="result-card">
+    <div class="result-icon" id="result-icon"></div>
+    <div class="result-status" id="result-status"></div>
+    <div class="result-detail" id="result-detail"></div>
+    <div class="result-info" id="result-info"></div>
+  </div>
+
+  <div class="camera-container" id="camera-container">
+    <div class="camera-placeholder" id="camera-placeholder">
+      <i class="fas fa-camera"></i>
+      <span>Cliquez sur "Démarrer" pour activer la caméra</span>
+    </div>
+    <video id="video" autoplay muted playsinline style="display:none;"></video>
+    <div class="camera-overlay" id="scan-overlay" style="display:none;">
+      <div class="scan-frame"><div class="scan-frame-b"></div><div class="scan-line"></div></div>
+    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-start" onclick="startCamera()"><i class="fas fa-camera"></i> Démarrer caméra</button>
+    <button class="btn btn-danger" id="btn-stop" onclick="stopCamera()" style="display:none;"><i class="fas fa-stop"></i> Arrêter</button>
+    <button class="btn btn-secondary" onclick="toggleConfig()"><i class="fas fa-cog"></i></button>
+  </div>
+
+  <div class="config-panel" id="config-panel">
+    <div class="form-label">Token API (optionnel)</div>
+    <input type="text" id="api-token" class="form-control" placeholder="Laissez vide si non utilisé">
+    <div class="form-label" style="margin-top:12px;">URL API</div>
+    <input type="text" id="api-url" class="form-control" placeholder="/api/validate/">
+    <button class="btn btn-primary" style="margin-top:16px;width:100%;justify-content:center;" onclick="saveConfig();toggleConfig();">
+      <i class="fas fa-save"></i> Enregistrer
+    </button>
+  </div>
+
+  <div class="manual-section">
+    <label class="form-label">Saisie manuelle du code-barres</label>
+    <div class="input-row">
+      <input type="text" id="barcode-input" class="form-control" placeholder="261..." 
+             style="text-transform:uppercase;letter-spacing:2px;"
+             onkeydown="if(event.key==='Enter') scanManuel()">
+      <button class="btn btn-primary" onclick="scanManuel()"><i class="fas fa-search"></i> Vérifier</button>
+    </div>
+  </div>
+
+  <div style="margin-top:20px;">
+    <div style="font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Historique de session</div>
+    <div id="scan-history" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;"></div>
+    <div id="no-history" style="color:var(--muted);font-size:.82rem;text-align:center;padding:16px;">Aucun scan effectué</div>
+  </div>
+</main>
+
+<footer>Musée Rovan'i Antananarivo — Validation des billets · v1.0</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script>
+let scanning = false;
+let countTotal = 0, countOk = 0, countNok = 0;
+let lastScanned = '';
+let lastScanTime = 0;
+const DEBOUNCE_MS = 2500;
+
+// Configuration par défaut adaptée à notre API Django
+let apiToken = localStorage.getItem('scan_api_token') || '';
+let apiUrl   = localStorage.getItem('scan_api_url')   || '/api/validate/';
+
+document.getElementById('api-token').value = apiToken;
+document.getElementById('api-url').value   = apiUrl;
+
+function saveConfig() {
+  apiToken = document.getElementById('api-token').value.trim();
+  apiUrl   = document.getElementById('api-url').value.trim() || '/api/validate/';
+  localStorage.setItem('scan_api_token', apiToken);
+  localStorage.setItem('scan_api_url', apiUrl);
+  showFlash('Configuration sauvegardée');
+}
+function toggleConfig() { 
+  document.getElementById('config-panel').classList.toggle('open'); 
+}
+
+// --- Caméra (QuaggaJS) ---
+function startCamera() {
+  document.getElementById('camera-placeholder').style.display = 'none';
+  document.getElementById('video').style.display = 'block';
+  document.getElementById('scan-overlay').style.display = 'flex';
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-stop').style.display = 'flex';
+
+  Quagga.init({
+    inputStream: {
+      type: 'LiveStream',
+      target: document.getElementById('video'),
+      constraints: { facingMode: 'environment', width: { min: 640 }, height: { min: 480 } },
+    },
+    decoder: { readers: ['ean_reader', 'code_128_reader', 'code_39_reader'] },
+    locate: true,
+    frequency: 5,
+  }, err => {
+    if (err) { alert('Erreur caméra : ' + err); stopCamera(); return; }
+    Quagga.start();
+    scanning = true;
+  });
+
+  Quagga.onDetected(result => {
+    const code = result.codeResult.code;
+    const now = Date.now();
+    if (code === lastScanned && now - lastScanTime < DEBOUNCE_MS) return;
+    lastScanned = code;
+    lastScanTime = now;
+    playBeep(true);
+    processScan(code);
+  });
+}
+
+function stopCamera() {
+  if (scanning) { Quagga.stop(); scanning = false; }
+  document.getElementById('video').style.display = 'none';
+  document.getElementById('camera-placeholder').style.display = 'flex';
+  document.getElementById('scan-overlay').style.display = 'none';
+  document.getElementById('btn-start').style.display = 'flex';
+  document.getElementById('btn-stop').style.display = 'none';
+}
+
+function scanManuel() {
+  const code = document.getElementById('barcode-input').value.trim().toUpperCase();
+  if (!code) { document.getElementById('barcode-input').focus(); return; }
+  processScan(code);
+  document.getElementById('barcode-input').value = '';
+}
+
+// --- Appel API Django ---
+async function processScan(barcode) {
+  showLoading();
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`;
+    
+    const resp = await fetch(apiUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ barcode: barcode }),
+    });
+    const data = await resp.json();
+    // Adaptation à la réponse de notre API
+    showResult(data, barcode);
+  } catch(e) {
+    showResult({ success: false, error: 'Erreur réseau' }, barcode);
+  }
+}
+
+// --- Affichage du résultat ---
+function showLoading() {
+  const card = document.getElementById('result-card');
+  card.className = 'result-card show';
+  card.style.background = 'rgba(197,160,89,.08)';
+  card.style.borderColor = 'rgba(197,160,89,.3)';
+  document.getElementById('result-icon').innerHTML = '<i class="fas fa-spinner fa-spin" style="color:var(--accent);"></i>';
+  document.getElementById('result-status').textContent = 'Vérification…';
+  document.getElementById('result-detail').textContent = '';
+  document.getElementById('result-info').innerHTML = '';
+}
+
+function showResult(data, barcode) {
+  countTotal++;
+  document.getElementById('count-total').textContent = countTotal;
+
+  let statut, message, detail, venteInfo;
+  
+  if (data.success) {
+    statut = 'valide';
+    message = 'Ticket valide - Accès autorisé';
+    detail = `Commande #${data.order_id} · ${data.total_amount} Ar`;
+    countOk++;
+    document.getElementById('count-ok').textContent = countOk;
+    playBeep(true);
+    
+    // Construction des infos supplémentaires
+    let itemsHtml = '';
+    if (data.items) {
+      itemsHtml = data.items.map(i => `${i.quantity}x ${i.name}`).join('<br>');
+    }
+    venteInfo = `
+      <div class="result-row"><span>Commande</span><span>#${data.order_id}</span></div>
+      <div class="result-row"><span>Montant</span><span>${data.total_amount} Ar</span></div>
+      ${itemsHtml ? `<div class="result-row"><span>Articles</span><span>${itemsHtml}</span></div>` : ''}
+      <div class="result-row"><span>Validé le</span><span>${new Date(data.validated_at).toLocaleString('fr-FR')}</span></div>
+    `;
+  } else {
+    // Déterminer le type d'erreur
+    const errorMsg = data.error || 'Ticket invalide';
+    if (errorMsg.includes('déjà')) {
+      statut = 'deja_utilise';
+      message = 'Ticket déjà utilisé';
+    } else if (errorMsg.includes('non trouvé') || errorMsg.includes('non payé')) {
+      statut = 'invalide';
+      message = 'Ticket non valide';
+    } else {
+      statut = 'invalide';
+      message = errorMsg;
+    }
+    detail = errorMsg;
+    countNok++;
+    document.getElementById('count-nok').textContent = countNok;
+    playBeep(false);
+    
+    venteInfo = `<div class="result-row"><span>Code scanné</span><span>${barcode}</span></div>`;
+    if (data.validated_at) {
+      venteInfo += `<div class="result-row"><span>Déjà validé le</span><span>${new Date(data.validated_at).toLocaleString('fr-FR')}</span></div>`;
+    }
+  }
+
+  const card = document.getElementById('result-card');
+  card.className = `result-card show ${statut}`;
+  
+  const icons = { valide: '✅', deja_utilise: '🚫', invalide: '❓' };
+  document.getElementById('result-icon').textContent = icons[statut] || '❓';
+  document.getElementById('result-status').textContent = message;
+  document.getElementById('result-detail').textContent = detail;
+  document.getElementById('result-info').innerHTML = venteInfo;
+
+  addToHistory(statut, message, barcode, data.order_id);
+}
+
+function addToHistory(statut, msg, barcode, orderId) {
+  const hist = document.getElementById('scan-history');
+  document.getElementById('no-history').style.display = 'none';
+  const colors = { valide: '#6af7a2', deja_utilise: '#f76a6a', invalide: '#f76a6a' };
+  const now = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const row = document.createElement('div');
+  row.style.cssText = `display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,.03);border-radius:8px;border-left:3px solid ${colors[statut]||'#888'};font-size:.8rem;`;
+  row.innerHTML = `
+    <span style="color:${colors[statut]||'#888'};font-size:1rem;">${statut==='valide'?'✓':'✗'}</span>
+    <span style="flex:1;color:var(--text);">${msg}</span>
+    ${orderId ? `<span style="color:var(--muted);font-family:monospace;font-size:.72rem;">#${orderId}</span>` : ''}
+    <span style="color:var(--muted);white-space:nowrap;">${now}</span>
+  `;
+  hist.insertBefore(row, hist.firstChild);
+  if (hist.children.length > 20) hist.removeChild(hist.lastChild);
+}
+
+function playBeep(success) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = success ? 880 : 300;
+    osc.type = success ? 'sine' : 'square';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (success ? 0.15 : 0.4));
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + (success ? 0.15 : 0.4));
+  } catch(e) {}
+}
+
+function showFlash(msg) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#090a18;padding:10px 20px;border-radius:8px;font-size:.85rem;z-index:999;animation:slideUp .3s ease;';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2000);
+}
+
+document.getElementById('barcode-input').focus();
+</script>
+</body>
+</html>

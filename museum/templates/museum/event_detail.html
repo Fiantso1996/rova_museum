@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.title }} – Musée Rovan'Antananarivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: white; color: #1a1a1a; }
+        h1,h2,h3,.serif { font-family: 'Playfair Display', serif; }
+        .nav-link-hover::after{content:'';display:block;width:0;height:1px;background:currentColor;transition:width .3s;}
+        .nav-link-hover:hover::after{width:100%;}
+    </style>
+</head>
+<body>
+<nav class="fixed w-full z-50 top-0 bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <a href="{% url 'home' %}" class="text-xl font-bold tracking-tighter serif uppercase"><div class="text-xl md:text-2xl font-bold tracking-tighter serif uppercase" data-aos="fade-right"><img style="max-width: 100%; height: 70px;border-radius: 20px;" src="{% static 'museum/image/logo.jpg' %}" alt=""></div></a>
+        <div class="hidden lg:flex space-x-8 uppercase text-[10px] tracking-widest font-semibold">
+            <a href="{% url 'home' %}" class="nav-link-hover hover:text-amber-700 transition-colors">Accueil</a>
+            <a href="{% url 'events' %}" class="nav-link-hover text-amber-700">Événements</a>
+            <a href="{% url 'staff' %}" class="nav-link-hover hover:text-amber-700 transition-colors">Équipe</a>
+            <a href="{% url 'contact' %}" class="nav-link-hover hover:text-amber-700 transition-colors">Contact</a>
+        </div>
+        <a href="{% url 'home' %}#tickets" class="hidden sm:block border border-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-black hover:text-white transition-all">Billetterie</a>
+    </div>
+</nav>
+
+<!-- Image hero de l'événement -->
+<div class="relative pt-20">
+    {% if event.image %}
+    <div class="h-80 md:h-[420px] overflow-hidden">
+        <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+    </div>
+    {% else %}
+    <div class="h-60 bg-stone-900 flex items-center justify-center">
+        <span class="text-7xl">🎭</span>
+    </div>
+    {% endif %}
+</div>
+
+<div class="max-w-5xl mx-auto px-6 py-12">
+    <!-- Breadcrumb -->
+    <nav class="text-xs text-gray-400 mb-8 flex gap-2 items-center">
+        <a href="{% url 'home' %}" class="hover:text-amber-700">Accueil</a> <span>›</span>
+        <a href="{% url 'events' %}" class="hover:text-amber-700">Événements</a> <span>›</span>
+        <span class="text-gray-600">{{ event.title }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Contenu principal -->
+        <div class="lg:col-span-2">
+            <span class="inline-block bg-amber-700 text-white text-[10px] uppercase tracking-widest font-bold px-3 py-1 mb-4">{{ event.get_category_display }}</span>
+            <h1 class="serif text-3xl md:text-5xl font-bold mb-6 leading-tight">{{ event.title }}</h1>
+            <div class="prose max-w-none">
+                <p class="text-gray-600 leading-relaxed text-base">{{ event.description }}</p>
+            </div>
+            <div class="mt-10 flex flex-wrap gap-4">
+                {% if not event.is_free %}
+                <a href="{% url 'home' %}#tickets" class="bg-stone-900 text-white px-6 py-3 uppercase tracking-widest text-xs font-bold hover:bg-amber-700 transition-colors">Acheter un billet</a>
+                {% endif %}
+                <a href="{% url 'contact' %}" class="border border-stone-900 text-stone-900 px-6 py-3 uppercase tracking-widest text-xs font-bold hover:bg-stone-900 hover:text-white transition-colors">Nous contacter</a>
+                <a href="{% url 'events' %}" class="text-gray-400 px-6 py-3 uppercase tracking-widest text-xs font-bold hover:text-stone-900 transition-colors">← Tous les événements</a>
+            </div>
+        </div>
+
+        <!-- Fiche info -->
+        <div class="bg-stone-50 p-6 border border-stone-200 h-fit space-y-5">
+            <h3 class="serif text-xl pb-3 border-b border-stone-200">Détails</h3>
+            <div class="flex gap-3">
+                <span class="text-lg mt-0.5">📅</span>
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-1">Date de début</p>
+                    <p class="text-sm text-gray-700">{{ event.start_date|date:"d F Y" }}<br><span class="text-gray-400">{{ event.start_date|date:"H:i" }}</span></p>
+                </div>
+            </div>
+            {% if event.end_date %}
+            <div class="flex gap-3">
+                <span class="text-lg mt-0.5">🏁</span>
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-1">Date de fin</p>
+                    <p class="text-sm text-gray-700">{{ event.end_date|date:"d F Y" }}<br><span class="text-gray-400">{{ event.end_date|date:"H:i" }}</span></p>
+                </div>
+            </div>
+            {% endif %}
+            <div class="flex gap-3">
+                <span class="text-lg mt-0.5">📍</span>
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-1">Lieu</p>
+                    <p class="text-sm text-gray-700">{{ event.location }}</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <span class="text-lg mt-0.5">🎟️</span>
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-1">Entrée</p>
+                    <p class="text-sm font-semibold {% if event.is_free %}text-green-700{% else %}text-amber-700{% endif %}">
+                        {% if event.is_free %}Gratuite{% else %}Payante{% endif %}
+                    </p>
+                </div>
+            </div>
+            {% if event.max_participants %}
+            <div class="flex gap-3">
+                <span class="text-lg mt-0.5">👥</span>
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-semibold text-gray-400 mb-1">Capacité</p>
+                    <p class="text-sm text-gray-700">{{ event.max_participants }} participants max.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<footer class="bg-stone-900 text-white py-12 px-6">
+    <div class="max-w-7xl mx-auto text-center">
+        <p class="serif text-2xl mb-2">MUSÉE ROVAN'ANTANANARIVO</p>
+        <p class="text-gray-400 text-xs uppercase tracking-widest">Patrimoine de Madagascar</p>
+        <div class="mt-6 flex justify-center gap-8 text-xs uppercase tracking-widest text-gray-400">
+            <a href="{% url 'home' %}" class="hover:text-white transition-colors">Accueil</a>
+            <a href="{% url 'events' %}" class="hover:text-white transition-colors">Événements</a>
+            <a href="{% url 'staff' %}" class="hover:text-white transition-colors">Équipe</a>
+            <a href="{% url 'contact' %}" class="hover:text-white transition-colors">Contact</a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

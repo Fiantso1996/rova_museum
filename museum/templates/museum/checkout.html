@@ -1,0 +1,340 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement - Musée Rovan'i Antananarivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --louvre-black: #1a1a1a;
+            --louvre-gold: #c5a059;
+            --louvre-gray: #f5f5f5;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: white;
+            color: var(--louvre-black);
+        }
+        h1, h2, h3, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .btn-primary {
+            background-color: var(--louvre-black);
+            color: white;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--louvre-black);
+        }
+        .btn-primary:hover {
+            background-color: transparent;
+            color: var(--louvre-black);
+            transform: translateY(-2px);
+        }
+        .payment-option {
+            border: 2px solid #f3f4f6;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .payment-option:hover {
+            border-color: var(--louvre-gold);
+            transform: scale(1.02);
+        }
+        .payment-option.selected {
+            border-color: var(--louvre-gold);
+            background-color: #fffbeb;
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        .input-error {
+            border-color: #dc2626 !important;
+        }
+        .messages {
+            margin-bottom: 1.5rem;
+        }
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .message.warning {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+        .message.success {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <nav class="sticky top-0 bg-white/90 backdrop-blur-md border-b border-gray-100 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center">
+            <a href="{% url 'home' %}" class="text-xl font-bold tracking-tighter serif uppercase">Musée Rovan'i Antananarivo</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-6 py-16">
+        <h1 class="text-4xl serif mb-10">Finaliser votre commande</h1>
+        
+        <!-- Affichage des messages Django -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Récapitulatif du panier -->
+        <div class="bg-white rounded-2xl shadow-sm p-8 mb-8">
+            <h2 class="text-lg font-bold mb-6">Récapitulatif du panier</h2>
+            <div class="divide-y">
+                {% for item in cart %}
+                <div class="py-4 flex justify-between">
+                    <div>
+                        <span class="font-medium">{{ item.name }}</span>
+                        <span class="text-gray-500 text-sm ml-2">x{{ item.quantity }}</span>
+                    </div>
+                    <span class="font-semibold">{{ item.price|floatformat:0 }} Ar</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="border-t mt-6 pt-6 flex justify-between text-xl">
+                <span class="font-bold">Total</span>
+                <span class="font-bold text-amber-700">{{ total }} Ar</span>
+            </div>
+        </div>
+
+        <!-- Formulaire de paiement -->
+        <div class="bg-white rounded-2xl shadow-sm p-8">
+            <h2 class="text-lg font-bold mb-6">Mode de paiement</h2>
+            <form method="post" action="{% url 'process_payment' %}" id="payment-form">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <!-- Option Carte Visa -->
+                    <div class="payment-option p-5 flex items-center rounded-xl" onclick="selectPayment('visa')">
+                        <input type="radio" name="payment_method" value="visa" id="visa" class="hidden" required>
+                        <label for="visa" class="flex items-center space-x-4 w-full cursor-pointer">
+                            <div class="w-12 h-12 bg-blue-50 flex items-center justify-center rounded-lg text-2xl">💳</div>
+                            <div>
+                                <span class="font-bold block">Carte Bancaire</span>
+                                <span class="text-xs text-gray-400">Visa / Mastercard</span>
+                            </div>
+                        </label>
+                    </div>
+                    <!-- Option Mobile Money -->
+                    <div class="payment-option p-5 flex items-center rounded-xl" onclick="selectPayment('mobile')">
+                        <input type="radio" name="payment_method" value="mobile" id="mobile" class="hidden" required>
+                        <label for="mobile" class="flex items-center space-x-4 w-full cursor-pointer">
+                            <div class="w-12 h-12 bg-orange-50 flex items-center justify-center rounded-lg text-2xl">📱</div>
+                            <div>
+                                <span class="font-bold block">Mobile Money</span>
+                                <span class="text-xs text-gray-400">Mvola / Orange Money</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Champs dynamiques selon le mode de paiement -->
+                <div id="payment-fields" class="hidden mt-8 pt-8 border-t">
+                    <!-- Champs pour Visa -->
+                    <div id="visa-fields" class="hidden">
+                        <div class="mb-6">
+                            <label class="text-xs uppercase tracking-widest font-bold text-gray-400 mb-2 block">Numéro de carte Visa</label>
+                            <input type="text" name="card_number" id="card_number" 
+                                   placeholder="4111 1111 1111 1111" 
+                                   class="w-full border-2 border-gray-100 p-3 rounded-lg focus:outline-none focus:border-amber-600 bg-gray-50">
+                            <p class="error-message" id="card-error"></p>
+                            <p class="text-[10px] text-gray-400 mt-1">Carte Visa (13 ou 16 chiffres, commence par 4)</p>
+                        </div>
+                    </div>
+                    <!-- Champs pour Mobile Money -->
+                    <div id="mobile-fields" class="hidden">
+                        <div class="mb-6">
+                            <label class="text-xs uppercase tracking-widest font-bold text-gray-400 mb-2 block">Numéro de téléphone</label>
+                            
+                            <div class="flex">
+                                <!-- Sélecteur avec drapeaux -->
+                                <select class="border-2 border-r-0 border-gray-100 p-3 rounded-l-lg focus:outline-none focus:border-amber-600 bg-gray-50 text-gray-600 font-medium cursor-pointer">
+                                    <option value="+261">🇲🇬 +261</option>
+                                </select>
+
+                                <!-- Input principal -->
+                                <input type="tel" name="mobile_number" id="mobile_number" 
+                                    placeholder="34 12 345 67" 
+                                    class="flex-1 border-2 border-gray-100 p-3 rounded-r-lg focus:outline-none focus:border-amber-600 bg-gray-50">
+                            </div>
+
+                            <p class="error-message" id="mobile-error"></p>
+                            <p class="text-[10px] text-gray-400 mt-1" style="color: green;">Format local (ex: 34...) après avoir choisi l'indicatif.</p>
+                        </div>
+                    </div>
+                    <button type="submit" id="submit-btn" class="w-full btn-primary py-5 uppercase text-xs tracking-widest font-bold shadow-xl">
+                        Confirmer le règlement de {{ total }} Ar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const cardInput = document.getElementById('card_number');
+        const mobileInput = document.getElementById('mobile_number');
+        const cardError = document.getElementById('card-error');
+        const mobileError = document.getElementById('mobile-error');
+        const visaFields = document.getElementById('visa-fields');
+        const mobileFields = document.getElementById('mobile-fields');
+        const submitBtn = document.getElementById('submit-btn');
+        const form = document.getElementById('payment-form');
+
+        // Fonction de sélection du mode de paiement
+        function selectPayment(method) {
+            // Retirer la classe 'selected' de toutes les options
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            // Ajouter la classe 'selected' à l'option choisie
+            document.querySelector(`.payment-option:has(input[value="${method}"])`).classList.add('selected');
+            // Cocher le radio correspondant
+            document.getElementById(method).checked = true;
+            // Afficher la zone des champs
+            document.getElementById('payment-fields').classList.remove('hidden');
+            
+            // Afficher les champs spécifiques et gérer l'attribut required
+            if (method === 'visa') {
+                visaFields.classList.remove('hidden');
+                mobileFields.classList.add('hidden');
+                mobileInput.removeAttribute('required');
+                cardInput.setAttribute('required', 'required');
+                // Réinitialiser les erreurs éventuelles
+                cardError.textContent = '';
+                cardInput.classList.remove('input-error');
+            } else {
+                mobileFields.classList.remove('hidden');
+                visaFields.classList.add('hidden');
+                cardInput.removeAttribute('required');
+                mobileInput.setAttribute('required', 'required');
+                mobileError.textContent = '';
+                mobileInput.classList.remove('input-error');
+            }
+        }
+
+        // Validation du numéro de carte Visa
+        function validateCard() {
+            let value = cardInput.value.replace(/\s/g, '');
+            if (value.length === 0) {
+                cardError.textContent = '';
+                cardInput.classList.remove('input-error');
+                return true; // on laisse le required gérer
+            }
+            const visaRegex = /^4\d{12}(\d{3})?$/;
+            if (!visaRegex.test(value)) {
+                cardError.textContent = 'Carte Visa invalide (doit commencer par 4, 13 ou 16 chiffres)';
+                cardInput.classList.add('input-error');
+                return false;
+            } else {
+                cardError.textContent = '';
+                cardInput.classList.remove('input-error');
+                return true;
+            }
+        }
+
+        // Validation du numéro de téléphone mobile
+        function validateMobile() {
+            let value = mobileInput.value.replace(/[\s\+]/g, '');
+            if (value.length === 0) {
+                mobileError.textContent = '';
+                mobileInput.classList.remove('input-error');
+                return true;
+            }
+            const mobileRegex = /^(261)?(32|33|34|38)\d{7}$/;
+            if (!mobileRegex.test(value)) {
+                mobileError.textContent = 'Numéro invalide (ex: +261341234567)';
+                mobileInput.classList.add('input-error');
+                return false;
+            } else {
+                mobileError.textContent = '';
+                mobileInput.classList.remove('input-error');
+                return true;
+            }
+        }
+
+        // Formatage automatique de la carte (espaces tous les 4 chiffres)
+        cardInput.addEventListener('input', function(e) {
+            let val = e.target.value.replace(/\s/g, '');
+            if (val.length > 16) val = val.slice(0,16);
+            const formatted = val.replace(/(.{4})/g, '$1 ').trim();
+            e.target.value = formatted;
+            validateCard();
+        });
+
+        mobileInput.addEventListener('input', validateMobile);
+
+        // Validation avant soumission
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            const method = document.querySelector('input[name="payment_method"]:checked');
+            
+            if (!method) {
+                alert("Veuillez sélectionner un mode de paiement.");
+                e.preventDefault();
+                return;
+            }
+            
+            if (method.value === 'visa') {
+                if (!validateCard()) isValid = false;
+                if (cardInput.value.trim() === '') {
+                    cardError.textContent = 'Ce champ est requis';
+                    cardInput.classList.add('input-error');
+                    isValid = false;
+                }
+            } else {
+                if (!validateMobile()) isValid = false;
+                if (mobileInput.value.trim() === '') {
+                    mobileError.textContent = 'Ce champ est requis';
+                    mobileInput.classList.add('input-error');
+                    isValid = false;
+                }
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                `;
+            }
+        });
+
+        // Si une méthode était déjà sélectionnée (après rechargement dû à une erreur)
+        // on restaure l'affichage des champs
+        window.addEventListener('DOMContentLoaded', function() {
+            const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+            if (checkedRadio) {
+                selectPayment(checkedRadio.value);
+                // Pré-remplir les valeurs précédentes si elles existent
+                {% if request.POST.card_number %}
+                cardInput.value = "{{ request.POST.card_number }}";
+                validateCard();
+                {% endif %}
+                {% if request.POST.mobile_number %}
+                mobileInput.value = "{{ request.POST.mobile_number }}";
+                validateMobile();
+                {% endif %}
+            }
+        });
+    </script>
+</body>
+</html>
