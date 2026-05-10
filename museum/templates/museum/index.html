@@ -61,7 +61,7 @@
                 transform: scale(1);
             }
             100% {
-                background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('{% static "museum/image/fiangonana_zao.jpeg.jpg" %}');
+                background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('{% static "museum/image/fiangonana_zao.jpeg" %}');
                 filter: blur(10px);
             }
         }
@@ -72,7 +72,7 @@
             100% { transform: translateX(calc(-250px * 4)); }
         }
 
-        .slider {
+        .slider-container {
             background: white;
             height: 100px;
             margin: auto;
@@ -81,30 +81,10 @@
             width: 100%;
         }
 
-        .slider::before, .slider::after {
-            background: linear-gradient(to right, white 0%, rgba(255, 255, 255, 0) 100%);
-            content: "";
-            height: 100px;
-            position: absolute;
-            width: 100px;
-            z-index: 2;
-        }
-
-        .slider::after {
-            right: 0;
-            top: 0;
-            transform: rotateZ(180deg);
-        }
-
-        .slider::before {
-            left: 0;
-            top: 0;
-        }
-
         .slide-track {
             animation: scroll 40s linear infinite;
             display: flex;
-            width: calc(250px * 8);
+            width: calc(250px * 20);
         }
 
         .slide {
@@ -114,6 +94,7 @@
             align-items: center;
             justify-content: center;
             padding: 0 40px;
+            flex-shrink: 0;
         }
 
         .slide img {
@@ -161,11 +142,8 @@
             transition: all 0.3s ease;
         }
 
-        #cart-modal, #payment-modal {
-            display: none;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(4px);
-            transition: opacity 0.3s ease;
+        #mobile-menu {
+            transition: transform 0.3s ease-in-out;
         }
 
         .video-container {
@@ -180,55 +158,73 @@
             height: auto;
             display: block;
         }
+        
+        /* Animation fade-in-up pour les expos */
+        .fade-in-up-custom {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="sticky-nav fixed w-full z-50 top-0 border-b border-gray-100">
+    <nav class="sticky-nav fixed w-full z-[100] top-0 border-b border-gray-100">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="text-xl md:text-2xl font-bold tracking-tighter serif uppercase" data-aos="fade-right">
-                <img style="max-width: 100%; height: 70px; border-radius: 20px;" src="{% static 'museum/image/logo.jpg' %}" alt="Logo">
+            <div class="text-xl md:text-2xl font-bold tracking-tighter serif uppercase shrink-0">
+                <img style="max-height: 60px; border-radius: 10px;" src="{% static 'museum/image/logo.jpg' %}" alt="Logo">
             </div>
             
-            <div class="hidden lg:flex space-x-8 uppercase text-[10px] tracking-widest font-semibold" data-aos="fade-down">
-                <a href="#visiter" class="nav-link-hover hover:text-amber-700 transition-colors">Visiter</a>
-                <a href="#expositions" class="nav-link-hover hover:text-amber-700 transition-colors">Expositions</a>
-                <a href="{% url 'events' %}" class="nav-link-hover hover:text-amber-700 transition-colors">Événements</a>
-                <a href="{% url 'staff' %}" class="nav-link-hover hover:text-amber-700 transition-colors">Équipe</a>
-                <a href="{% url 'contact' %}" class="nav-link-hover hover:text-amber-700 transition-colors">Contact</a>
+            <div class="hidden lg:flex space-x-8 uppercase text-[10px] tracking-widest font-semibold">
+                <a href="#visiter" class="hover:text-amber-700 transition-colors">Visiter</a>
+                <a href="#expositions" class="hover:text-amber-700 transition-colors">Expositions</a>
+                <a href="{% url 'events' %}" class="hover:text-amber-700 transition-colors">Événements</a>
+                <a href="{% url 'staff' %}" class="hover:text-amber-700 transition-colors">Équipe</a>
+                <a href="{% url 'contact' %}" class="hover:text-amber-700 transition-colors">Contact</a>
             </div>
 
-            <div class="flex items-center space-x-4 md:space-x-6" data-aos="fade-left">
-                <a href="#tickets" class="hidden sm:block border border-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-black hover:text-white transition-all transform hover:scale-105 active:scale-95">
+            <div class="flex items-center space-x-4">
+                <a href="#tickets" class="hidden sm:block border border-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-black hover:text-white transition-all">
                     Billetterie
                 </a>
-
-                <!-- <button onclick="toggleCart()" class="relative p-2 hover:scale-110 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                
+                <button id="burger-btn" class="lg:hidden p-2 text-black">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path id="burger-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
-                    <span id="cart-count" class="absolute top-0 right-0 bg-amber-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center animate-pulse">0</span>
-                </button> -->
+                </button>
             </div>
+        </div>
+
+        <div id="mobile-menu" class="fixed inset-0 top-20 bg-white z-50 transform translate-x-full lg:hidden flex flex-col p-10 space-y-8 uppercase text-sm tracking-widest font-bold">
+            <a href="#visiter" class="mobile-link">Visiter</a>
+            <a href="#expositions" class="mobile-link">Expositions</a>
+            <a href="{% url 'events' %}" class="mobile-link">Événements</a>
+            <a href="{% url 'staff' %}" class="mobile-link">Équipe</a>
+            <a href="{% url 'contact' %}" class="mobile-link">Contact</a>
+            <a href="#tickets" class="mobile-link border-t pt-8 text-amber-600">Billetterie</a>
         </div>
     </nav>
 
     <section class="hero-gradient h-[100vh] flex items-center justify-center text-center text-white pt-20">
         <div class="max-w-4xl px-6">
-            <span class="uppercase tracking-[0.3em] text-xs mb-4 block opacity-80" data-aos="fade-up" data-aos-delay="200">Palais de la Reine</span>
-            <h1 class="text-5xl md:text-8xl mb-6 leading-tight" data-aos="fade-up" data-aos-delay="400">L'Héritage d'une Nation</h1>
-            <p class="text-lg md:text-xl font-light mb-10 opacity-90 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="600">Explorez l'histoire sacrée de Madagascar au cœur du Rova d'Antananarivo.</p>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-6" data-aos="fade-up" data-aos-delay="800">
-                <a href="#tickets" class="bg-white text-black px-12 py-5 uppercase text-xs tracking-widest font-bold hover:bg-amber-600 hover:text-white transition-all duration-500 w-full sm:w-auto shadow-xl">Acheter un billet</a>
-                <a href="#expositions" class="border border-white text-white px-12 py-5 uppercase text-xs tracking-widest font-bold hover:bg-white hover:text-black transition-all duration-500 w-full sm:w-auto">Découvrir</a>
+            <span class="uppercase tracking-[0.3em] text-xs mb-4 block opacity-80" data-aos="fade-up">Palais de la Reine</span>
+            <h1 class="text-4xl md:text-8xl mb-6 leading-tight" data-aos="fade-up" data-aos-delay="200">L'Héritage d'une Nation</h1>
+            <p class="text-base md:text-xl font-light mb-10 opacity-90 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="400">Explorez l'histoire sacrée de Madagascar au cœur du Rova d'Antananarivo.</p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6" data-aos="fade-up" data-aos-delay="600">
+                <a href="#tickets" class="bg-white text-black px-10 py-4 md:px-12 md:py-5 uppercase text-xs tracking-widest font-bold hover:bg-amber-600 hover:text-white transition-all w-full sm:w-auto">Acheter un billet</a>
+                <a href="#expositions" class="border border-white text-white px-10 py-4 md:px-12 md:py-5 uppercase text-xs tracking-widest font-bold hover:bg-white hover:text-black transition-all w-full sm:w-auto">Découvrir</a>
             </div>
         </div>
     </section>
 
-    <section id="visiter" class="py-32 bg-gray-50 overflow-hidden">
-        <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+    <section id="visiter" class="py-20 md:py-32 bg-gray-50 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
             <div data-aos="fade-right">
-                <h2 class="text-5xl mb-8">Préparez votre visite</h2>
+                <h2 class="text-4xl md:text-5xl mb-8">Préparez votre visite</h2>
                 <p class="text-gray-600 mb-8 leading-relaxed text-lg">Situé sur la plus haute colline de la ville, le Rova est le symbole de la souveraineté malgache. Nous vous accueillons pour une immersion culturelle unique.</p>
                 <div class="space-y-6">
                     <div class="flex items-start space-x-6 group">
@@ -242,599 +238,187 @@
                     </div>
                 </div>
             </div>
-            <div class="relative" data-aos="fade-left">
-                <div class="bg-amber-600 absolute -inset-4 transform rotate-3 rounded-lg opacity-20"></div>
+            <div class="relative mt-10 md:mt-0" data-aos="fade-left">
                 <div class="video-container">
-                    <video 
-                        autoplay 
-                        muted 
-                        loop 
-                        controls
-                        playsinline 
-                        class="rounded-lg shadow-2xl">
+                    <video autoplay muted loop controls playsinline class="rounded-lg shadow-2xl">
                         <source src="{% static 'museum/video/rova.mp4' %}" type="video/mp4">
-                        Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-2 italic text-center">Cliquez sur l'icône son de la vidéo pour activer l'audio.</p>
             </div>
         </div>
     </section>
 
-    <section id="tickets" class="py-32 bg-white">
+    <section id="tickets" class="py-20 md:py-32 bg-white">
         <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-20" data-aos="fade-up">
-                <h2 class="text-5xl mb-6 uppercase tracking-tighter">Billetterie Officielle</h2>
-                <div class="w-24 h-1 bg-amber-600 mx-auto mb-8"></div>
-                <!-- <p class="text-gray-500 text-lg">Réservez vos titres d'accès en quelques clics</p> -->
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-4xl md:text-5xl mb-6 uppercase tracking-tighter">Billetterie</h2>
+                <div class="w-24 h-1 bg-amber-600 mx-auto"></div>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-10">
-                <div class="ticket-card p-10 flex flex-col items-center text-center rounded-xl" data-aos="fade-up" data-aos-delay="100">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="ticket-card p-8 md:p-10 flex flex-col items-center text-center rounded-xl" data-aos="fade-up">
                     <span class="text-xs uppercase tracking-widest text-amber-600 mb-6 font-bold">International</span>
-                    <h3 class="text-3xl mb-4">Visiteur Étranger</h3>
-                    <p class="text-gray-500 mb-8 text-sm flex-grow">Accès complet au palais, aux tombes royales et aux expositions temporaires.</p>
-                    <div class="text-4xl font-light mb-10 italic">40 000 <span class="text-sm">Ar</span></div>
-                    <!-- <button onclick="addToCart('Étranger', 40000)" class="w-full btn-primary py-4 uppercase text-xs tracking-widest font-bold">Ajouter au panier</button> -->
+                    <h3 class="text-2xl md:text-3xl mb-4">Visiteur Étranger</h3>
+                    <p class="text-gray-500 mb-8 text-sm flex-grow">Accès complet au palais et aux expositions.</p>
+                    <div class="text-3xl md:text-4xl font-light mb-10 italic">40 000 <span class="text-sm">Ar</span></div>
                 </div>
 
-                <div class="ticket-card p-10 flex flex-col items-center text-center rounded-xl bg-[#f9f7f2] border-none shadow-sm relative overflow-hidden" data-aos="fade-up" data-aos-delay="200">
-                    <div class="absolute top-0 right-0 bg-amber-600 text-white text-[8px] px-4 py-1 uppercase tracking-widest transform rotate-45 translate-x-8 translate-y-4">Populaire</div>
+                <div class="ticket-card p-8 md:p-10 flex flex-col items-center text-center rounded-xl bg-[#f9f7f2] border-none shadow-sm relative overflow-hidden" data-aos="fade-up" data-aos-delay="200">
                     <span class="text-xs uppercase tracking-widest text-amber-600 mb-6 font-bold">Local - Adulte</span>
-                    <h3 class="text-3xl mb-4">Adulte Résident</h3>
-                    <p class="text-gray-500 mb-8 text-sm flex-grow">Tarif national pour les citoyens malgaches (CIN requise à l'entrée).</p>
-                    <div class="text-4xl font-light mb-10 italic">5 000 <span class="text-sm">Ar</span></div>
-                    <!-- <button onclick="addToCart('Adulte Résident', 5000)" class="w-full btn-primary py-4 uppercase text-xs tracking-widest font-bold">Ajouter au panier</button> -->
+                    <h3 class="text-2xl md:text-3xl mb-4">Adulte Résident</h3>
+                    <p class="text-gray-500 mb-8 text-sm flex-grow">Tarif national pour les citoyens (CIN requise).</p>
+                    <div class="text-3xl md:text-4xl font-light mb-10 italic">5 000 <span class="text-sm">Ar</span></div>
                 </div>
 
-                <div class="ticket-card p-10 flex flex-col items-center text-center rounded-xl" data-aos="fade-up" data-aos-delay="300">
+                <div class="ticket-card p-8 md:p-10 flex flex-col items-center text-center rounded-xl" data-aos="fade-up" data-aos-delay="300">
                     <span class="text-xs uppercase tracking-widest text-amber-600 mb-6 font-bold">Local - Jeune</span>
-                    <h3 class="text-3xl mb-4">Enfant Résident</h3>
-                    <p class="text-gray-500 mb-8 text-sm flex-grow">Tarif réduit pour les mineurs résidents et les étudiants.</p>
-                    <div class="text-4xl font-light mb-10 italic">2 000 <span class="text-sm">Ar</span></div>
-                    <!-- <button onclick="addToCart('Enfant Résident', 2000)" class="w-full btn-primary py-4 uppercase text-xs tracking-widest font-bold">Ajouter au panier</button> -->
+                    <h3 class="text-2xl md:text-3xl mb-4">Enfant Résident</h3>
+                    <p class="text-gray-500 mb-8 text-sm flex-grow">Tarif réduit pour mineurs et étudiants.</p>
+                    <div class="text-3xl md:text-4xl font-light mb-10 italic">2 000 <span class="text-sm">Ar</span></div>
                 </div>
             </div>
         </div>
     </section>
 
-<section id="expositions" class="py-20 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-6">
-        <div class="mb-12 text-center" data-aos="fade-up">
-            <h2 class="text-3xl md:text-4xl serif text-gray-900">Expositions en cours</h2>
-            <div class="mt-2 h-1 w-20 bg-amber-500 mx-auto rounded"></div>
-        </div>
+    <section id="expositions" class="py-20 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="mb-12 text-center" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl serif text-gray-900">Expositions en cours</h2>
+                <div class="mt-2 h-1 w-20 bg-amber-500 mx-auto rounded"></div>
+            </div>
 
-        <!-- Conteneur des cartes -->
-        <div id="expo-container" class="grid md:grid-cols-2 gap-8">
-            <!-- Les 2 premières cartes (toujours visibles) -->
-            <div class="expo-card group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden cursor-pointer" data-aos="zoom-in">
-                <div class="relative overflow-hidden h-[400px]">
-                    <img src="{% static 'museum/image/basakana_talo.jpg' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out group-hover:opacity-0" alt="Exposition Lapa Besakana">
-                    <img src="{% static 'museum/image/besakana_zao.jpeg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 scale-110 transition-all duration-1000 ease-in-out group-hover:opacity-100 group-hover:scale-100" alt="Lapa Besakana détail">
+            <div id="expo-container" class="grid sm:grid-cols-2 gap-6 md:gap-8">
+                <div class="expo-card group bg-white rounded-xl shadow-sm overflow-hidden" data-aos="zoom-in">
+                    <div class="relative h-[300px] md:h-[400px] overflow-hidden">
+                        <img src="{% static 'museum/image/basakana_talo.jpg' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 group-hover:opacity-0">
+                        <img src="{% static 'museum/image/besakana_zao.jpeg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                    </div>
+                    <div class="p-6"><h3 class="text-xl font-semibold">Lapa Besakana</h3></div>
                 </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold group-hover:text-amber-700 transition-colors duration-500">Lapa Besakana</h3>
+
+                <div class="expo-card group bg-white rounded-xl shadow-sm overflow-hidden" data-aos="zoom-in">
+                    <div class="relative h-[300px] md:h-[400px] overflow-hidden">
+                        <img src="{% static 'museum/image/tranovola_talo.jpeg' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 group-hover:opacity-0">
+                        <img src="{% static 'museum/image/ZAZA.jpeg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                    </div>
+                    <div class="p-6"><h3 class="text-xl font-semibold">Lapa Tranovola</h3></div>
+                </div>
+
+                <div class="hidden-expo hidden group bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="relative h-[300px] md:h-[400px] overflow-hidden">
+                        <img src="{% static 'museum/image/fiangonana_talo.jpg' %}" class="absolute inset-0 w-full h-full object-cover">
+                        <img src="{% static 'museum/image/fiangonana_zao.jpeg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                    </div>
+                    <div class="p-6"><h3 class="text-xl font-semibold">Fiangonana</h3></div>
+                </div>
+
+                <div class="hidden-expo hidden group bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="relative h-[300px] md:h-[400px] overflow-hidden">
+                        <img src="{% static 'museum/image/Manampisoa_talo.jpg' %}" class="absolute inset-0 w-full h-full object-cover">
+                        <img src="{% static 'museum/image/Manampisoa_zao.jpg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                    </div>
+                    <div class="p-6"><h3 class="text-xl font-semibold">Lapa Manampisoa</h3></div>
                 </div>
             </div>
 
-            <div class="expo-card group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden cursor-pointer" data-aos="zoom-in" data-aos-delay="100">
-                <div class="relative overflow-hidden h-[400px]">
-                    <img src="{% static 'museum/image/tranovola_talo.jpeg' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out group-hover:opacity-0" alt="Exposition Mémoires">
-                    <img src="{% static 'museum/image/ZAZA.jpeg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 scale-110 transition-all duration-1000 ease-in-out group-hover:opacity-100 group-hover:scale-100" alt="Détail Mémoires">
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-semibold group-hover:text-amber-700 transition-colors duration-500">Lapa Tranovola</h3>
-                </div>
-            </div>
-
-            <!-- Cartes supplémentaires (masquées par défaut) -->
-            <!-- Note: Ajoutez autant de cartes que vous voulez ici avec la classe 'hidden-expo' -->
-            <div class="hidden-expo hidden group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden cursor-pointer">
-                <!-- Contenu Carte 3 -->
-                <div class="relative overflow-hidden h-[400px]">
-                    <img src="{% static 'museum/image/fiangonana_talo.jpg' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out group-hover:opacity-0" alt="Exposition Mémoires">
-                    <img src="{% static 'museum/image/fiangonana_zao.jpeg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 scale-110 transition-all duration-1000 ease-in-out group-hover:opacity-100 group-hover:scale-100" alt="Détail Mémoires">
-                </div>
-                <div class="p-6"><h3 class="text-xl font-semibold">Fiangonana</h3></div>
-            </div>
-
-            <div class="hidden-expo hidden group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden cursor-pointer">
-                <!-- Contenu Carte 4 -->
-                <div class="relative overflow-hidden h-[400px]">
-                    <img src="{% static 'museum/image/Manampisoa_talo.jpg' %}" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out group-hover:opacity-0" alt="Exposition Mémoires">
-                    <img src="{% static 'museum/image/Manampisoa_zao.jpg' %}" class="absolute inset-0 w-full h-full object-cover opacity-0 scale-110 transition-all duration-1000 ease-in-out group-hover:opacity-100 group-hover:scale-100" alt="Détail Mémoires">
-                </div>
-                <div class="p-6"><h3 class="text-xl font-semibold">Lapa Manampisoa</h3></div>
-            </div>
-        </div>
-
-        <!-- Lien "Voir plus" avec animation -->
-        <div class="mt-16 text-center">
-            <a href="javascript:void(0)" id="load-more-link" class="inline-flex items-center gap-2 text-amber-600 font-bold uppercase tracking-widest hover:text-amber-800 transition-all duration-300 group">
-                <span class="border-b-2 border-amber-500 group-hover:border-amber-800">Voir plus d'expositions</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform group-hover:translate-y-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="Step 19 9l-7 7-7-7" />
-                </svg>
-            </a>
-        </div>
-    </div>
-</section>
-
-<style>
-    /* Animation personnalisée pour l'apparition */
-    .fade-in-up-custom {
-        animation: fadeInUp 0.8s ease forwards;
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-</style>
-
-<script>
-    document.getElementById('load-more-link').addEventListener('click', function() {
-        // On récupère toutes les cartes masquées
-        const hiddenExpos = document.querySelectorAll('.hidden-expo');
-        
-        // On en affiche seulement 2 à chaque clic
-        let count = 0;
-        hiddenExpos.forEach(expo => {
-            if (count < 2 && expo.classList.contains('hidden')) {
-                expo.classList.remove('hidden');
-                expo.classList.add('fade-in-up-custom'); // On ajoute l'animation
-                count++;
-            }
-        });
-
-        // Si après l'affichage il n'en reste plus de cachées, on masque le lien
-        const remainingHidden = document.querySelectorAll('.hidden-expo.hidden');
-        if (remainingHidden.length === 0) {
-            this.parentElement.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => this.parentElement.style.display = 'none', 500);
-        }
-    });
-</script>
-
-    <section class="py-20 bg-white border-t border-gray-50 overflow-hidden">
-    <div class="max-w-6xl mx-auto px-6 mb-12">
-        <div class="text-center">
-            <h2 class="text-2xl serif text-gray-400 uppercase tracking-[0.2em]">Nos Partenaires</h2>
-        </div>
-    </div>
-    
-    <!-- Conteneur principal du slider -->
-    <div class="slider-container relative w-full overflow-hidden">
-        <div class="slide-track flex">
-            <!-- Premier groupe de logos -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Premier groupe de logos -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Premier groupe de logos -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Premier groupe de logos -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Premier groupe de logos -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Premier groupe de logos -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Premier groupe de logos -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
-            </div>
-            <!-- Deuxième groupe (Copie identique pour la boucle) -->
-            <div class="slide-group flex">
-                <a href="https://www.mcc.gov.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc">
-                </a>
-                <a href="https://groupe-filatex.com/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex">
-                </a>
-                <a href="https://www.yas.mg/" target="_blank" class="slide">
-                    <img src="{% static 'museum/image/yas.png' %}" alt="Yas">
-                </a>
+            <div class="mt-16 text-center">
+                <button id="load-more-link" class="inline-flex items-center gap-2 text-amber-600 font-bold uppercase tracking-widest hover:text-amber-800 transition-all group">
+                    <span>Voir plus d'expositions</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform group-hover:translate-y-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-    <footer class="bg-[#1a1a1a] text-white py-24">
-        <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-16">
+    <section class="py-16 bg-white border-t border-gray-50 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6 mb-10 text-center">
+            <h2 class="text-xl serif text-gray-400 uppercase tracking-[0.2em]">Nos Partenaires</h2>
+        </div>
+        <div class="slider-container">
+            <div class="slide-track">
+                <div class="slide"><img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc"></div>
+                <div class="slide"><img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex"></div>
+                <div class="slide"><img src="{% static 'museum/image/yas.png' %}" alt="Yas"></div>
+                <div class="slide"><img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc"></div>
+                <div class="slide"><img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex"></div>
+                <div class="slide"><img src="{% static 'museum/image/yas.png' %}" alt="Yas"></div>
+                <div class="slide"><img src="{% static 'museum/image/mcc.jpg' %}" alt="mcc"></div>
+                <div class="slide"><img src="{% static 'museum/image/filatex.JPG' %}" alt="filatex"></div>
+                <div class="slide"><img src="{% static 'museum/image/yas.png' %}" alt="Yas"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-[#1a1a1a] text-white py-16 md:py-24">
+        <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
             <div class="col-span-1 md:col-span-2">
-                <h3 class="text-3xl serif mb-8 uppercase tracking-widest">Musée Rovan'i Antananarivo</h3>
-                <p class="text-gray-400 max-w-sm mb-10 italic leading-relaxed">Garant de l'histoire et du patrimoine de Madagascar sur la colline sacrée.</p>
+                <h3 class="text-2xl md:text-3xl serif mb-6 uppercase tracking-widest">Musée Rovan'i Antananarivo</h3>
+                <p class="text-gray-400 max-w-sm italic leading-relaxed">Garant de l'histoire et du patrimoine de Madagascar sur la colline sacrée.</p>
             </div>
             <div>
-                <h4 class="text-xs uppercase tracking-widest font-bold mb-8 text-amber-600">Planifier</h4>
-                <ul class="space-y-6 text-gray-400 text-[10px] tracking-widest uppercase font-semibold">
+                <h4 class="text-xs uppercase tracking-widest font-bold mb-6 text-amber-600">Planifier</h4>
+                <ul class="space-y-4 text-gray-400 text-[10px] tracking-widest uppercase">
                     <li><a href="#visiter" class="hover:text-white transition-colors">Visiter</a></li>
                     <li><a href="#tickets" class="hover:text-white transition-colors">Billets</a></li>
                 </ul>
             </div>
             <div>
-                <h4 class="text-xs uppercase tracking-widest font-bold mb-8 text-amber-600">Assistance</h4>
-                <ul class="space-y-6 text-gray-400 text-[10px] tracking-widest uppercase font-semibold">
+                <h4 class="text-xs uppercase tracking-widest font-bold mb-6 text-amber-600">Assistance</h4>
+                <ul class="space-y-4 text-gray-400 text-[10px] tracking-widest uppercase">
                     <li><a href="{% url 'contact' %}" class="hover:text-white transition-colors">Contact</a></li>
                 </ul>
             </div>
         </div>
-        <div class="max-w-6xl mx-auto px-6 mt-20 pt-8 border-t border-gray-800 text-[10px] text-gray-500 uppercase tracking-[0.4em] text-center">
-            &copy; 2026 Musée Rovan'i Antananarivo. Patrimoine National de Madagascar.
+        <div class="max-w-6xl mx-auto px-6 mt-16 pt-8 border-t border-gray-800 text-[9px] md:text-[10px] text-gray-500 uppercase tracking-[0.4em] text-center">
+            &copy; 2026 Musée Rovan'i Antananarivo.
         </div>
     </footer>
-
-    <div id="cart-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-lg shadow-2xl overflow-hidden transform transition-all duration-300 scale-95 opacity-0" id="cart-content">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
-                <h3 class="text-xl serif uppercase tracking-tighter">Votre Panier</h3>
-                <button onclick="toggleCart()" class="text-gray-400 hover:text-black">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
-                    </svg>
-                </button>
-            </div>
-            <div id="cart-items" class="p-6 max-h-[45vh] overflow-y-auto"></div>
-            <div class="p-8 bg-white border-t">
-                <div class="flex justify-between items-center mb-8">
-                    <span class="font-semibold uppercase text-xs tracking-widest">Total</span>
-                    <span id="cart-total" class="text-3xl serif text-amber-700">0 Ar</span>
-                </div>
-                <button onclick="goToPayment()" class="w-full btn-primary py-5 uppercase text-xs tracking-widest font-bold">Passer au paiement</button>
-            </div>
-        </div>
-    </div>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         AOS.init({ duration: 1000, once: true });
 
-        let cart = [];
-        const csrfToken = '{{ csrf_token }}';
+        // Menu Mobile Toggle
+        const burgerBtn = document.getElementById('burger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const burgerIcon = document.getElementById('burger-icon');
 
-        async function fetchCart() {
-            const response = await fetch('{% url "cart_data" %}');
-            const data = await response.json();
-            cart = data.cart;
-            updateUI();
-        }
+        burgerBtn.addEventListener('click', () => {
+            const isOpen = !mobileMenu.classList.contains('translate-x-full');
+            if (isOpen) {
+                mobileMenu.classList.add('translate-x-full');
+                burgerIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+            } else {
+                mobileMenu.classList.remove('translate-x-full');
+                burgerIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+            }
+        });
 
-        function addToCart(name, price) {
-            fetch('{% url "add_to_cart" %}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-                body: JSON.stringify({ name, price })
-            }).then(res => res.json()).then(data => {
-                if (data.success) { cart = data.cart; updateUI(); }
+        // Fermer le menu au clic sur un lien
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('translate-x-full');
+                burgerIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
             });
-        }
+        });
 
-        function updateUI() {
-            const countElement = document.getElementById('cart-count');
-            const totalElement = document.getElementById('cart-total');
-            const itemsElement = document.getElementById('cart-items');
-            let total = 0, count = 0;
-
-            if (cart.length === 0) {
-                itemsElement.innerHTML = '<p class="text-center text-gray-400">Vide</p>';
-            } else {
-                itemsElement.innerHTML = cart.map((item, index) => {
-                    total += item.price * item.quantity;
-                    count += item.quantity;
-                    return `<div class="flex justify-between mb-4 border-b pb-2">
-                        <span>${item.name} (x${item.quantity})</span>
-                        <span>${(item.price * item.quantity).toLocaleString()} Ar</span>
-                    </div>`;
-                }).join('');
+        // Load More Expositions
+        document.getElementById('load-more-link').addEventListener('click', function() {
+            const hiddenExpos = document.querySelectorAll('.hidden-expo');
+            let count = 0;
+            hiddenExpos.forEach(expo => {
+                if (count < 2 && expo.classList.contains('hidden')) {
+                    expo.classList.remove('hidden');
+                    expo.classList.add('fade-in-up-custom');
+                    count++;
+                }
+            });
+            if (document.querySelectorAll('.hidden-expo.hidden').length === 0) {
+                this.style.display = 'none';
             }
-            countElement.textContent = count;
-            totalElement.textContent = total.toLocaleString() + ' Ar';
-        }
-
-        function toggleCart() {
-            const modal = document.getElementById('cart-modal');
-            const content = document.getElementById('cart-content');
-            if (modal.style.display === 'flex') {
-                content.classList.replace('scale-100', 'scale-95');
-                content.classList.replace('opacity-100', 'opacity-0');
-                setTimeout(() => modal.style.display = 'none', 200);
-            } else {
-                modal.style.display = 'flex';
-                setTimeout(() => {
-                    content.classList.replace('scale-95', 'scale-100');
-                    content.classList.replace('opacity-0', 'opacity-100');
-                }, 10);
-            }
-        }
-
-        function goToPayment() { window.location.href = '{% url "checkout" %}'; }
-        
-        fetchCart();
+        });
     </script>
 </body>
 </html>
