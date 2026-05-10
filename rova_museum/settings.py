@@ -116,7 +116,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = []  # Les fichiers statiques sont dans les dossiers static des apps
+STATICFILES_DIRS = [BASE_DIR , 'static']  # Les fichiers statiques sont dans les dossiers static des apps
 
 # Fichiers media (images uploadées)
 MEDIA_URL = '/media/'
