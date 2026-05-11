@@ -90,13 +90,16 @@ class Contact(models.Model):
 class StaffMember(models.Model):
     """Membres du personnel du musée"""
     ROLE_CHOICES = [
-        ('directeur', 'Directeur / Directrice'),
         ('conservateur', 'Conservateur / Conservatrice'),
-        ('guide', 'Guide touristique'),
-        ('accueil', 'Agent d\'accueil'),
-        ('securite', 'Agent de sécurité'),
-        ('technique', 'Technicien'),
-        ('administration', 'Administration'),
+        ('guide', 'Agent d\'accueil et de guidage'),
+        ('bibliotheque', 'Chef de service de la bibliothèque'),
+        ('musee', 'Chef de service du musée'),
+        ('conservation', 'Chef de service de la conservation'),
+        ('saf', 'Chef de service des affaires financières'),
+        ('rh', 'Responsable des ressources humaines'),
+        ('informatique', 'Chef de division informatique'),
+        ('communication', 'Chef de division communication'),
+        ('administration', 'Assistant administratif'),
         ('autre', 'Autre'),
     ]
     first_name = models.CharField(max_length=100, verbose_name="Prénom")
