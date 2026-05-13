@@ -156,14 +156,13 @@
 
 <div class="org-container">
     
-    <!-- NIVEAU 1 : DIRECTION -->
     <div class="text-center mb-8">
         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">Direction Générale</span>
     </div>
     <div class="org-level">
         {% for member in members %}
             {% if member.role == 'directeur' or member.role == 'responsable' %}
-            <div class="member-card" onclick="openModal('{{ member.full_name|escapejs }}', '{{ member.get_role_display|escapejs }}', '{{ member.photo.url|default:'' }}', '{{ member.bio|escapejs }}', '{{ member.phone|escapejs }}', '{{ member.email|escapejs }}')">
+            <div class="member-card" onclick="openModal('{{ member.full_name|escapejs }}', '{{ member.get_role_display|escapejs }}', '{% if member.photo %}{{ member.photo.url|escapejs }}{% endif %}', '{{ member.bio|escapejs }}', '{{ member.phone|escapejs }}', '{{ member.email|escapejs }}')">
                 <div class="photo-container">
                     {% if member.photo %}
                         <img src="{{ member.photo.url }}" class="member-photo-circle" alt="{{ member.full_name }}">
@@ -180,14 +179,13 @@
         {% endfor %}
     </div>
 
-    <!-- NIVEAU 2 : ÉQUIPE OPÉRATIONNELLE -->
     <div class="text-center mb-8">
         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em]">Équipe Administrative et Technique</span>
     </div>
     <div class="org-level">
         {% for member in members %}
             {% if member.role != 'directeur' and member.role != 'responsable' %}
-            <div class="member-card" onclick="openModal('{{ member.full_name|escapejs }}', '{{ member.get_role_display|escapejs }}', '{{ member.photo.url|default:'' }}', '{{ member.bio|escapejs }}', '{{ member.phone|escapejs }}', '{{ member.email|escapejs }}')">
+            <div class="member-card" onclick="openModal('{{ member.full_name|escapejs }}', '{{ member.get_role_display|escapejs }}', '{% if member.photo %}{{ member.photo.url|escapejs }}{% endif %}', '{{ member.bio|escapejs }}', '{{ member.phone|escapejs }}', '{{ member.email|escapejs }}')">
                 <div class="photo-container">
                     {% if member.photo %}
                         <img src="{{ member.photo.url }}" class="member-photo-circle" alt="{{ member.full_name }}">
@@ -218,7 +216,6 @@
     </div>
 </section>
 
-<!-- Modale de détails -->
 <div id="memberModal" onclick="closeModal()">
     <div class="bg-white max-w-md w-full rounded-2xl overflow-hidden shadow-2xl relative" onclick="event.stopPropagation()">
         <button onclick="closeModal()" class="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-black shadow-sm">&times;</button>
